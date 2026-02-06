@@ -14,29 +14,29 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. Inicialización
-if 'log' not in st.session_state: st.session_state.log = ["🤖 Sistema de Simulación Iniciado..."]
+# --- INICIALIZACIÓN ---
 if 'historial' not in st.session_state: st.session_state.historial = []
+if 'log' not in st.session_state: st.session_state.log = ["🤖 Sistema Iniciado..."]
 if 'saldo_sim' not in st.session_state: st.session_state.saldo_sim = 0.0
-if 'primer_inicio_sim' not in st.session_state: st.session_state.primer_inicio_sim = True
+# Usamos una llave para saber si el usuario cambió el capital manualmente
+if 'capital_anterior' not in st.session_state: st.session_state.capital_anterior = 0.0
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.header("⚙️ Configuración del Bot")
-    saldo_inicial = st.number_input("Capital de Prueba Gs.", value=100000, step=10000)
+    st.header("⚙️ Configuración")
+    capital_prueba = st.number_input("Capital de Prueba Gs.", value=100000, step=10000)
     
-    if st.session_state.primer_inicio_sim:
-        st.session_state.saldo_sim = float(saldo_inicial)
-        st.session_state.primer_inicio_sim = False
-        
+    # LÓGICA DE ACTUALIZACIÓN FORZADA:
+    # Si el capital_prueba es diferente al que teníamos guardado, reseteamos el saldo
+    if capital_prueba != st.session_state.capital_anterior:
+        st.session_state.saldo_sim = float(capital_prueba)
+        st.session_state.capital_anterior = float(capital_prueba)
+        st.session_state.log.append(f"🔄 Capital reiniciado a {capital_prueba:,} Gs")
+    
     modo = st.selectbox("Estrategia Automática:", 
                         ["Estrategia del Hueco 10x o +", "Cazador de Rosas (10x)", "Estrategia 2x2", "Conservadora (1.50x)"])
     
     monto_apuesta = st.number_input("Monto por Apuesta Gs.", value=2000, step=1000)
-    
-    if st.button("🗑️ Limpiar Simulación"):
-        st.session_state.clear()
-        st.rerun()
 
 # --- LÓGICA DEL CEREBRO AUTOMÁTICO ---
 def procesar_simulacion():
